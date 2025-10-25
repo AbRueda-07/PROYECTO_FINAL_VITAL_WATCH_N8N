@@ -1,0 +1,486 @@
+{
+  "name": "VITAL WATCH - PROYECTO FINAL-n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\n👤 *Paciente:* {{$json.nombre || '—'}}\n💓 *Presión:* {{$json.presion_arterial || ( $json.sistolica && $json.diastolica ? $json.sistolica + '/' + $json.diastolica : '—' )}}\n🏷️ *Categoría:* {{$json.categoria_presion || '—'}}\n🩺 *Recomendación:* {{$json.recomendacion_ai || '—'}}\n\n📱 *Contacto:* {{$json.contacto || '—'}}\n📅 *Fecha:* {{$json.fecha || $json.timestamp || $now}}\n\n_Consulta a tu médico de confianza._\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres un asistente médico digital integrado en la app Vital Watch.\nTu función es ayudar a interpretar la presión arterial y brindar orientación general en salud,\nsin sustituir una consulta médica profesional.\nExplica con lenguaje sencillo, usa tono cercano y enfocado en bienestar.\nNo uses tecnicismos. Máximo 3 frases cortas.\n\n",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -304
+      ],
+      "id": "a92aefbb-1896-4969-80d8-8e0fd07c08ad",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "1224654694 "
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        48
+      ],
+      "id": "e85219e9-a73e-4710-bb3b-47a82455f3d0",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "=1224654694",
+        "text": "=<b>⚠️ Alerta Vital Watch</b>\n\n👤 <b>Paciente:</b> {{$json.nombre || $json.body?.nombre || 'N/D'}}\n💓 <b>Presión:</b> {{$json.presion_arterial || $json.body?.presion_arterial || $json.presion || $json.body?.presion || 'N/D'}}\n🏷️ <b>Categoría:</b> {{$json.categoria_presion || 'N/D'}}\nS/D: {{$json.sistolica || 'N/D'}}/{{$json.diastolica || 'N/D'}}\n🩺 <b>Recomendación:</b> {{$json.output || $json.recomendacion_ai || '—'}}\n\n📱 <b>Contacto:</b> {{$json.contacto || $json.body?.contacto || 'N/D'}}\n📅 <b>Fecha:</b> {{$json.timestamp || $json.body?.fecha || (new Date()).toISOString()}}\n\nConsulta a tu médico de confianza.\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        -944
+      ],
+      "id": "a3d5e6b7-a72e-4847-8d02-32d4e4d45022",
+      "name": "Send a text message",
+      "webhookId": "cc7e4264-fa31-45b3-9bfb-980e3f94326c",
+      "credentials": {
+        "telegramApi": {
+          "id": "iAtR4tTwfURixnIC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 300
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "e7f7017a-9401-4e5b-8bfd-f2467a45bde3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "OFpwTcgpviGBBm81",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pacientes/data",
+        "options": {
+          "responseData": "={\"status\":\"success\",\"message\":\"Datos recibidos\",\"ts\":\"{{$now}}\"}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        -432
+      ],
+      "id": "a74de1fe-97fa-49c7-9781-66af50f4fd8f",
+      "name": "Webhook",
+      "webhookId": "b1585eec-15b0-42a7-9fc4-cfab138672f9"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P222rCNIhVgeP6-a5sgP0KIJen6EwLAWyww9Zpuz9u8",
+          "mode": "list",
+          "cachedResultName": "mediciones/data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P222rCNIhVgeP6-a5sgP0KIJen6EwLAWyww9Zpuz9u8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P222rCNIhVgeP6-a5sgP0KIJen6EwLAWyww9Zpuz9u8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nombre ": "{{$json[\"nombre\"]}}",
+            "presion ": "{{$json[\"presion_arterial\"]}}",
+            "sistolica ": "{{$json[\"sistolica\"]}}",
+            "diastolica": "{{$json[\"diastolica\"]}}",
+            "categoria_presion": "{{$json[\"categoria_presion\"]}}",
+            "fecha": "{{$json[\"timestamp\"]}}",
+            "recomendacion_ai": "{{$json[\"recomendacion_ai\"]}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "nombre ",
+              "displayName": "nombre ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "presion ",
+              "displayName": "presion ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sistolica ",
+              "displayName": "sistolica ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "diastolica",
+              "displayName": "diastolica",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "categoria_presion",
+              "displayName": "categoria_presion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recomendacion_ai",
+              "displayName": "recomendacion_ai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        -256
+      ],
+      "id": "92827d17-fdba-4135-8475-d0d1dfa48946",
+      "name": "mediciones/data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Jhyuem5wyG7HnTJl",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2d22b028-06b1-46ab-89b7-0f0f2ec63457",
+              "leftValue": "={{$json.categoria_presion}}",
+              "rightValue": "=Alta",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "5120ceb3-42b7-42b9-9185-5e4878e14926",
+              "leftValue": "={{$json[\"categoria_presion\"]}}",
+              "rightValue": "Baja",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -688
+      ],
+      "id": "3de70dc3-ec66-42d8-aaab-6e94cf478a0e",
+      "name": "If_(Es_Alerta)"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "python",
+        "pythonCode": "# VitalWatch - Clasificar presión (Python Beta) con soporte para payload en raíz o dentro de \"body\"\n# - Lee \"presion_arterial\" o \"presion\" desde raíz o body\n# - Si encuentra presión válida \"120/80\" clasifica y APLANA al root\n# - Si no hay presión (alta de paciente), no rompe flujo\n\nimport re\nfrom datetime import datetime\n\nitem = _input.item\nj = dict(item.json) if hasattr(item, \"json\") else dict(item)\n\n# helper para leer desde raíz o body\ndef pick_pressure(payload):\n    root_p = payload.get(\"presion_arterial\") or payload.get(\"presion\")\n    body = payload.get(\"body\") or {}\n    body_p = body.get(\"presion_arterial\") or body.get(\"presion\")\n    p = (root_p or body_p or \"\")\n    return str(p).strip().replace(\" \", \"\")\n\npresion = pick_pressure(j)\n\nm = re.match(r\"^(\\d{2,3})/(\\d{2,3})$\", presion)\nif m:\n    s = int(m.group(1))\n    d = int(m.group(2))\n\n    if s < 90 or d < 60:\n        categoria = \"Baja\"\n    elif (120 <= s <= 139) or (80 <= d <= 89):\n        categoria = \"Prehipertensión\"\n    elif s >= 140 or d >= 90:\n        categoria = \"Alta\"\n    else:\n        categoria = \"Normal\"\n\n    # Aplanar al root para que MERGE/IF/Telegram vean estos campos directo\n    j[\"presion_arterial\"]   = presion\n    j[\"sistolica\"]          = s\n    j[\"diastolica\"]         = d\n    j[\"categoria_presion\"]  = categoria\n\n# timestamp siempre\nj.setdefault(\"timestamp\", datetime.utcnow().isoformat() + \"Z\")\n\nreturn j\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -416
+      ],
+      "id": "bd2e0337-cfeb-4712-9bdb-5f44fdc11434",
+      "name": "Code-Clasificar_Presion"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        528,
+        -688
+      ],
+      "id": "c6630f27-167c-4851-b8b9-c950f2267fdd",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sendTo": "aruedaa@miumg.edu.gt",
+        "subject": "=📊 REPORTE VITAL WATCH - de {{$json.nombre}}",
+        "message": "=<h2>⚠️ Alerta Vital Watch</h2>\n<p><b>Paciente:</b> {{$json.nombre}}</p>\n<p><b>Presión:</b> {{$json.presion_arterial}} → {{$json.categoria_presion}}</p>\n<p><b>Recomendación:</b> {{$json.recomendacion_ai}}</p>\n<p><b>Fecha:</b> {{$json.fecha}}</p>\n<p><b>Contacto:</b> {{$json.contacto}}</p>\n<hr>\n<p>Este es un aviso automático generado por Vital Watch.</p>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1168,
+        432
+      ],
+      "id": "9be9e3a2-81cb-4745-99e1-4a7ea2cf6415",
+      "name": "Enviar Reporte Semanal",
+      "webhookId": "4b24a571-5c3c-40b1-8727-a918a1f7d961",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WwgTzYvEK8Gh7MyW",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sendTo": "aruedaa@miumg.edu.gt",
+        "subject": "=📩 Reporte Vital Watch ",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Crea un resporte con los datos del paciente, asi como en este ejemplo: \n\n👤 Paciente: Nina nona\n💓 Presión: 195/80\n🏷️ Categoría: Prehipertensión\nS/D: 195/80\n🩺 Recomendación: Te apoyo en tu cuidado. Dado que tienes prehipertensión, te recomiendo reducir el consumo de sal y aumentar la actividad física. Hoy, puedes empezar a caminar 30 minutos al día y elegir alimentos más saludables.\nContacto : 44545445\n📅 Fecha: 2025-10-25T06:58:24.299000Z\n\nConsulta a tu médico de confianza.\n\n`, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        592
+      ],
+      "id": "71ee9289-e6b6-4cdd-a6ed-44a373201709",
+      "name": "Send a message in Gmail",
+      "webhookId": "1a5594f6-f079-4caa-a7ec-e6507e6f40a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WwgTzYvEK8Gh7MyW",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "mediciones/data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code-Clasificar_Presion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "If_(Es_Alerta)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "mediciones/data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code-Clasificar_Presion": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If_(Es_Alerta)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "mediciones/data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mediciones/data": {
+      "main": [
+        []
+      ]
+    },
+    "Enviar Reporte Semanal": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7418fa7-133f-4c0e-9ad6-7495db48c451",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a22b68cf162b719b0790f0522959f599d73b07a2ee0d213e8b07486f3dcecc2d"
+  },
+  "id": "6iPDtcZ1vx6JRexT",
+  "tags": []
+}
