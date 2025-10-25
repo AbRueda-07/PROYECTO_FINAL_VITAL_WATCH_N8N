@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Vital Watch</string>
+
+    <!-- Formulario -->
+    <string name="formulario_titulo">Formulario de Datos</string>
+    <string name="hint_nombre">Nombre</string>
+    <string name="hint_edad">Edad</string>
+    <string name="label_genero">Género</string>
+    <string name="genero_masculino">Masculino</string>
+    <string name="genero_femenino">Femenino</string>
+    <string name="genero_otro">Otro</string>
+    <string name="hint_contacto">Contacto</string>
+    <string name="hint_enfermedades">Enfermedades actuales</string>
+    <string name="hint_medicamentos">Medicamentos actuales (dosis y frecuencia)</string>
+    <string name="btn_guardar">Guardar</string>
+
+    <!-- Pacientes -->
+    <string name="titulo_pacientes">Pacientes Registrados</string>
+    <string name="hint_buscar_paciente">Buscar paciente...</string>
+    <string name="btn_volver_inicio">Volver al Inicio</string>
+</resources>
